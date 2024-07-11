@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=40.0.0", "wheel"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "make_mcl_clusters"
-version = "0.1.0" 
+name = "Mobile_clusters"
+dynamic = ["version"]
 description = "A package to create MCL clusters"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,7 +18,10 @@ dependencies = [
 ]
 
 [project.scripts]
-make_mcl_clusters = "src.main:main"
+Mobile_clusters = "scripts.main:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["scripts"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
