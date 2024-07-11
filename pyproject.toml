@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=40.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "make_mcl_clusters"
+version = "0.1.0" 
+description = "A package to create MCL clusters"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Muhammad Sulman", email = "sulmanmu40@gmail.com"}
+]
+
+dependencies = [
+    "pandas>=2.0.0",
+    "biopython>=1.84"
+]
+
+[project.scripts]
+make_mcl_clusters = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
