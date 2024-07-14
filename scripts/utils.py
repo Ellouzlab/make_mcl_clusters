@@ -2,6 +2,8 @@ from Bio import SeqIO
 import os
 from datetime import datetime
 import pandas as pd
+from tqdm import tqdm
+import io
 
 def running_message(function):
     def wrapper(*args, **kwargs):
@@ -22,25 +24,26 @@ def running_message(function):
         print(f"Time: {current_time} - Running {function.__name__}\n\nUsing inputs:\n{function.__name__}({signature})\n")
         result = function(*args, **kwargs)
 
-        now2 = datetime.now()
+        now2 = datetime.now()                
         current_time2 = now2.strftime("%H:%M:%S")
         print(f"\nTime: {current_time2} - {function.__name__} Completed\n\n")
         return result
     return wrapper
 
-def read_fasta(fastafile: str)->list:
-    '''
-    Reads fastafile
-    :param fastafile: file path
-    :return: list of fasta record
-    '''
+def read_fasta(fastafile):
     recordlist = []
-    # open file
-    with open(fastafile) as handle:
-        for record in SeqIO.parse(handle, "fasta"):
-            recordlist.append(record)
-    return recordlist
-
+    file_size = os.path.getsize(fastafile)
+    pbar = tqdm(total=file_size, unit="B", unit_scale=True, desc="Reading FASTA")
+    
+    with open(fastafile, 'r') as handle:
+        while (line := handle.readline()):
+            recordlist.append(line)
+            pbar.update(len(line))
+    
+    pbar.close()
+    
+    records = list(SeqIO.parse(fastafile, "fasta"))
+    return records
 
 def write_fasta(outpath: str, recordlist: list)->None:
     '''
@@ -76,5 +79,43 @@ def makedir(path: str, force_make: bool=False)->str:
             except:
                 i += 1
         return new_name
+    
+    
+def read_lines(file_path):
+    file_size = os.path.getsize(file_path)
+    lines = []
+    
+    with open(file_path, 'r') as file:
+        with tqdm(total=file_size, unit='B', unit_scale=True, desc=f"Reading {file_path}") as pbar:
+            for line in file:
+                lines.append(line)
+                pbar.update(len(line))
+    
+    return lines
 
-
+def pd_read_csv(file_path, chunksize=10000, **kwargs):
+    file_size = os.path.getsize(file_path)
+    
+    with tqdm(total=file_size, unit='B', unit_scale=True, desc=f"Reading {file_path}") as pbar:
+        chunks = []
+        with open(file_path, 'r') as file:
+            chunk_data = ""
+            while True:
+                chunk = file.read(chunksize)
+                if not chunk:
+                    break
+                chunk_data += chunk
+                pbar.update(len(chunk))
+                
+                if '\n' in chunk:
+                    last_newline = chunk_data.rfind('\n')
+                    to_process = chunk_data[:last_newline]
+                    chunk_data = chunk_data[last_newline + 1:]
+                    
+                    chunks.append(pd.read_csv(io.StringIO(to_process), **kwargs))
+        
+        if chunk_data:
+            chunks.append(pd.read_csv(io.StringIO(chunk_data), **kwargs))
+    
+    df = pd.concat(chunks, ignore_index=True)
+    return df
