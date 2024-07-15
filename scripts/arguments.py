@@ -10,7 +10,7 @@ def arguments():
     
     cluster_parser = subparsers.add_parser('cluster', help='build cluster representative database')
     cluster_parser.add_argument("-i", "--input", help="Input protein fasta", required=True)
-    cluster_parser.add_argument("-o", "--outdir", help="Output directory", default="output_mcl_cluster")
+    cluster_parser.add_argument("-o", "--outdir", help="Output directory", default="output_cluster")
     cluster_parser.add_argument("-t", "--threads", help="Number of threads", default=cpu_count(), type=int)
     cluster_parser.add_argument("-s", "--sensitivity",
         help=(
@@ -26,13 +26,14 @@ def arguments():
         type=int,
         choices=[0, 1, 2, 3, 4, 5])
     cluster_parser.add_argument("--mmseqs", help="Use mmseqs instead of diamond", action="store_true")
-    cluster_parser.add_argument("--mmseqs_sensitivity", help="Sensitivity of mmseqs clustering", default=6, type=int)
+    cluster_parser.add_argument("--mmseqs_sensitivity", help="Sensitivity of mmseqs clustering", default=7.5, type=float)
     
     network_parser = subparsers.add_parser('network', help='create a network from clusters')
     network_parser.add_argument("-i", "--input", help="Output directory from the 'cluster' module", required=True)
-    network_parser.add_argument("-m", '--map', help="TSV mapping file with first column 'assembly_name' being nodes, and second, 'protein_ids' being protein ids in the initial protein file", required=True)
+    network_parser.add_argument("-r", '--reference_db', help="TSV mapping file with first column 'assembly_name' being nodes, and second, 'protein_ids' being protein ids in the initial protein file", required=True)
     network_parser.add_argument("-t", "--threads", help="Number of threads", default=cpu_count(), type=int)
     network_parser.add_argument("-o", "--outdir", help="Output directory", default="output_network")
+    network_parser.add_argument("--type", default='nucl', choices=['nucl', 'prot'], help="reference database type")
     
     arguments = args.parse_args()
     
@@ -40,7 +41,7 @@ def arguments():
         if arguments.mmseqs and arguments.sensitivity != 1:
             args.error("--mmseqs flag is incompatible with --sensitivity flag. Please use the default sensitivity (1) when using --mmseqs. To alter mmseqs sensitivity, use --mmseqs_sensitivity flag.")
             
-        if not arguments.mmseqs and arguments.mmseqs_sensitivity != 6:
+        if not arguments.mmseqs and arguments.mmseqs_sensitivity != 7.5:
             args.error("--mmseqs_sensitivity flag is only compatible with --mmseqs flag.")
     
     return arguments

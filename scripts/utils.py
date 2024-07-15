@@ -1,6 +1,6 @@
 from Bio import SeqIO
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from tqdm import tqdm
 import io
@@ -14,8 +14,22 @@ def running_message(function):
                 return f"{type(arg).__name__}({len(arg)} items)"
             return repr(arg)
 
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
+        def format_timedelta(delta):
+            seconds = delta.total_seconds()
+            if seconds < 60:
+                return f"{seconds:.2f} seconds"
+            elif seconds < 3600:
+                minutes = seconds / 60
+                return f"{minutes:.2f} minutes"
+            elif seconds < 86400:
+                hours = seconds / 3600
+                return f"{hours:.2f} hours"
+            else:
+                days = seconds / 86400
+                return f"{days:.2f} days"
+
+        T1 = datetime.now()
+        current_time = T1.strftime("%H:%M:%S")
         arg_names = function.__code__.co_varnames[:function.__code__.co_argcount]
         args_repr = [f"{arg}={format_argument(a)}" for arg, a in zip(arg_names, args)]
         kwargs_repr = [f"{k}={format_argument(v)}" for k, v in kwargs.items()]
@@ -24,25 +38,32 @@ def running_message(function):
         print(f"Time: {current_time} - Running {function.__name__}\n\nUsing inputs:\n{function.__name__}({signature})\n")
         result = function(*args, **kwargs)
 
-        now2 = datetime.now()                
-        current_time2 = now2.strftime("%H:%M:%S")
-        print(f"\nTime: {current_time2} - {function.__name__} Completed\n\n")
+        T2 = datetime.now()                
+        current_time2 = T2.strftime("%H:%M:%S")
+        total_time = format_timedelta(T2 - T1)
+        print(f"\nTime: {current_time2} - {function.__name__} Completed")
+        print(f"Total time taken: {total_time}\n\n")
         return result
     return wrapper
-
 def read_fasta(fastafile):
-    recordlist = []
-    file_size = os.path.getsize(fastafile)
-    pbar = tqdm(total=file_size, unit="B", unit_scale=True, desc="Reading FASTA")
+    # Get the total size of the file
+    total_size = os.path.getsize(fastafile)
     
-    with open(fastafile, 'r') as handle:
-        while (line := handle.readline()):
-            recordlist.append(line)
+    # Get the total number of records to parse with a progress bar for reading lines
+    with open(fastafile) as f, tqdm(total=total_size, desc="Reading FASTA file", unit="B", unit_scale=True, unit_divisor=1024) as pbar:
+        total_records = 0
+        for line in f:
             pbar.update(len(line))
+            if line.startswith(">"):
+                total_records += 1
     
-    pbar.close()
+    # Parse the FASTA file with a progress bar
+    with tqdm(total=total_records, desc="Parsing FASTA file", unit=" Records") as pbar:
+        records = []
+        for record in SeqIO.parse(fastafile, "fasta"):
+            records.append(record)
+            pbar.update(1)
     
-    records = list(SeqIO.parse(fastafile, "fasta"))
     return records
 
 def write_fasta(outpath: str, recordlist: list)->None:

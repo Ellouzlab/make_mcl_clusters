@@ -105,12 +105,11 @@ def cluster(input: str, outdir: str, threads: int, sensitivity: int)->None:
     
     # Write representative genes to a fasta file
     record_list = read_fasta(input)
+    record_dict = {record.id: record for record in record_list}
+    
     rep_gene_list = []
     for rep_gene in tqdm(rep_gene_score_dict, desc="Getting reps from fasta", unit="genes"):
-        for record in record_list:
-            if record.id == rep_gene:
-                rep_gene_list.append(record)
-                break
+        rep_gene_list.append(record_dict[rep_gene])
     
     for record in rep_gene_list:
         record.description = f"{gene_dict[record.id]}"
