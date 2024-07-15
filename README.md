@@ -5,6 +5,7 @@ Builds genesharing network for multiple purposes, including:
  - understanding plasmidic gene mobility
  - phage gene mobility
  - understanding gene flow between different taxa
+ - Building an AMG database
 
 
 
