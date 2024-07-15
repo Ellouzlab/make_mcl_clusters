@@ -9,7 +9,6 @@ def translate_dna(dna_sequence):
     frames = []
     seq_len = len(dna_sequence)
     
-    # Pad the sequence with 'N' if its length is not a multiple of three
     if seq_len % 3 != 0:
         dna_sequence += 'N' * (3 - seq_len % 3)
         seq_len = len(dna_sequence)
@@ -32,11 +31,10 @@ def process_record(record):
 
 @running_message
 def translate(input_file, output_file, threads):
-    chunk_size = 1000  # Process records in chunks of 1000
+    chunk_size = 1000
     
     with open(output_file, 'w') as output_handle:
         with Pool(processes=threads) as pool:
-            # Count total records for progress bar
             total_records = sum(1 for _ in SeqIO.parse(input_file, 'fasta'))
             progress_bar = tqdm(total=total_records, unit='records')
 
@@ -53,7 +51,6 @@ def translate(input_file, output_file, threads):
                     process_chunk(records)
                     records = []
 
-            # Process any remaining records
             if records:
                 process_chunk(records)
 

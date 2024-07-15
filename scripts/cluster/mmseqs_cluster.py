@@ -15,13 +15,13 @@ def mmseqs_makedb(input, outdir):
     return db
 
 @running_message
-def mmseqs(db, outdir, threads, sensitivity, coverage=0.5, e_value=1e5):
+def mmseqs(db, outdir, threads, sensitivity, coverage=0.5, min_id = 0.3 ,e_value=1e5):
     tmp = f"{outdir}/tmp"
     os.makedirs(tmp, exist_ok=True)
     
     cluster_output = f"{outdir}/cluster_output"
     if not os.path.exists(f"{cluster_output}.index"):
-        cmd = f"mmseqs cluster -s {sensitivity} -c {coverage} -e {e_value} --threads {threads} {db} {cluster_output} {tmp}"
+        cmd = f"mmseqs cluster -s {sensitivity} -c {coverage} --min-seq-id {min_id} -e {e_value} --threads {threads} {db} {cluster_output} {tmp}"
         run(cmd, shell=True)
     else:
         print("Output file already exists, using existing file")
@@ -57,6 +57,10 @@ def processing_cluster(tsv_path, input, outdir):
 
 def mmseqs_cluster(input: str, outdir: str, threads: int, sensitivity: int)->None:
     os.makedirs(outdir, exist_ok=True)
+    
+    fasta_path = f"{outdir}/input.fasta"
+    if not os.path.exists(fasta_path):
+        run(f"cp {input} {fasta_path}", shell=True)
     
     db = mmseqs_makedb(input, outdir)
     cluster_output = mmseqs(db, outdir, threads, sensitivity)

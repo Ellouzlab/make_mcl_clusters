@@ -10,7 +10,7 @@ import os
 def diamond(input, database, tsv_path, bitscore, threads, sensitivity=1):
     sensitivity_types = {
         0: "--faster",
-        1: "--fast",
+        1: "",
         2: "--sensitive",
         3: "--more-sensitive",
         4: "--very-sensitive",
@@ -98,8 +98,8 @@ def cluster(input: str, outdir: str, threads: int, sensitivity: int)->None:
     mcl_df.to_csv(mcl_input, sep='\t', header=False, index=False)
     
     # Cluster using MCL
-    mcl(mcl_input, f"{outdir}/mcl_output", 1.3, threads)
-    gene_dict = parsing_clusters(f"{outdir}/mcl_output")
+    mcl(mcl_input, f"{outdir}/mcl_output.txt", 1.3, threads)
+    gene_dict = parsing_clusters(f"{outdir}/mcl_output.txt")
     
     rep_gene_score_dict=analyze(df, gene_dict, outdir)
     
