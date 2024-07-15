@@ -14,8 +14,9 @@ authors = [
 
 dependencies = [
     "pandas>=2.0.0",
-    "biopython>=1.84"
-]
+    "biopython>=1.84",
+    "tqdm>=2.0.0",
+    "matplotlib>=3.0.0"]
 
 [project.scripts]
 Mobile_clusters = "scripts.main:main"
