@@ -23,5 +23,5 @@ Requires:
  - mcl >= 22.282
    - ```mamba install mcl=14.137```
   
-NOTE: This program may have trouble installing if not your base env.
+NOTE: This program may have trouble installing if you are not in your base env. This will be fixed in the future.
 
