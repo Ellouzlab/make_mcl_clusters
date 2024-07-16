@@ -28,13 +28,13 @@ requirements:
 
 
 about:
-  homepage: https://github.com/Ellouzlab/make_mcl_clusters  # Replace with the URL of your package's repository
-  license: MIT  # Replace with your package's license
+  homepage: https://github.com/Ellouzlab/make_mcl_clusters
+  license: MIT
   summary: "A package to create MCL clusters"
   description: |
     A package to create MCL clusters.
-  repository: https://github.com/Ellouzlab/make_mcl_clusters  # Replace with the URL for development-related information
+  repository: https://github.com/Ellouzlab/make_mcl_clusters
 
 extra:
   recipe-maintainers:
-    - sulmanm1  # Replace with your GitHub username
+    - sulmanm1
