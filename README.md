@@ -21,7 +21,7 @@ Requires:
  - mmseqs2 >= 15.6f452
    - ```mamba install mmseqs=15.6f452```
  - mcl >= 22.282
-   - ```mamba install mcl=14.137```
+   - ```mamba install mcl=22.282```
   
 NOTE: This program may have trouble installing if you are not in your base env. This will be fixed in the future.
 
