@@ -12,7 +12,9 @@
 
 3. Install dependencies
 
-```mamba install diamond=2.0.0 mmseqs2=15.6 mcl=22-282```
+```mamba install -c bioconda -c conda-forge diamond=2.0.0 mmseqs2=15.6 mcl=22-282```
+
+NOTE: mamba can be substituted for conda if you prefer; however, mamba is much faster.
 
 ## Method 2
 
