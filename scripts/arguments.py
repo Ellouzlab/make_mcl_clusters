@@ -1,9 +1,8 @@
 import argparse
 from multiprocessing import cpu_count
+from . import version
 
 def arguments():
-    version = "1.0"
-    
     args = argparse.ArgumentParser(description="Make MCL cluster using Diamond")
     args.add_argument('-v', '--version', action='version', version=f'%(prog)s {version}')
     subparsers = args.add_subparsers(dest='command', help='sub-command help')

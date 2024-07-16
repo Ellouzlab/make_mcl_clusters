@@ -3,8 +3,8 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Mobile_clusters"
-dynamic = ["version"]
+name = "mobile_clusters"
+version = "0.1.2"
 description = "A package to create MCL clusters"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,10 +19,7 @@ dependencies = [
     "matplotlib>=3.0.0"]
 
 [project.scripts]
-Mobile_clusters = "scripts.main:main"
+mobile_clusters = "scripts.main:main"
 
 [tool.setuptools]
 packages = ["scripts"]
-
-[tool.setuptools.dynamic]
-version = {file = "VERSION"}
