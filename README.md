@@ -18,8 +18,8 @@ Please install these dependencies via mamba or conda, otherwise ensure the comma
 Requires: 
  - diamond >= 2.0.0
    - ```mamba install diamond=2.0.0```
- - mmseqs2 >= 15.6f452
-   - ```mamba install mmseqs=15.6f452```
+ - mmseqs2 >= 15.6
+   - ```mamba install mmseqs2=15.6```
  - mcl >= 22.282
    - ```mamba install mcl=22.282```
   
