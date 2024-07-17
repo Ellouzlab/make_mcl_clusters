@@ -1,6 +1,6 @@
 # INSTALLATION
 
-## Method 1:
+## Method 1 - Create from source:
 1. Create a new environment:
 
 ```mamba create -n mobile_clusters python=3.10```
@@ -16,7 +16,7 @@
 
 NOTE: mamba can be substituted for conda if you prefer; however, mamba is much faster.
 
-## Method 2
+## Method 2 - Download from Conda-Forge
 
 ```mamba install -c conda-forge mobile_clusters```
 
