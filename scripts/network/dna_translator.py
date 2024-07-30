@@ -1,5 +1,5 @@
-from Bio import SeqIO
-from Bio.Seq import Seq
+from Bio import SeqIO # type: ignore
+from Bio.Seq import Seq # type: ignore
 from multiprocessing import Pool
 from tqdm import tqdm
 from scripts.utils import running_message

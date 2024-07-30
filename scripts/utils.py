@@ -1,9 +1,82 @@
-from Bio import SeqIO
+from Bio import SeqIO # type: ignore
 import os
 from datetime import datetime, timedelta
-import pandas as pd
+import pandas as pd # type: ignore
 from tqdm import tqdm
 import io
+import logging
+import sys
+import subprocess
+import shlex
+
+def get_unique_log_filename(base_log_filename):
+    i = 1
+    base_name, extension = os.path.splitext(base_log_filename)
+    while os.path.exists(base_log_filename):
+        base_log_filename = f"{base_name}_{i}{extension}"
+        i += 1
+    return base_log_filename
+
+def init_logging(log_filename):
+    class TeeHandler(logging.Handler):
+        def __init__(self, filename, mode='a'):
+            super().__init__()
+            self.file = open(filename, mode)
+            self.stream_handler = logging.StreamHandler(sys.stdout)
+
+        def emit(self, record):
+            log_entry = self.format(record)
+            self.file.write(log_entry + '\n')
+            self.file.flush()  # Ensure log entry is written to file immediately
+            self.stream_handler.emit(record)
+
+        def close(self):
+            self.file.close()
+            super().close()
+    i=1
+    while os.path.exists(log_filename):
+        log_filename = get_unique_log_filename(log_filename)
+    print(f"Logging to {log_filename}")
+    # Configure logging to use the TeeHandler
+    tee_handler = TeeHandler(log_filename)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    tee_handler.setFormatter(formatter)
+
+    logging.basicConfig(level=logging.INFO, handlers=[tee_handler])
+
+
+def run_command(cmd, **kwargs):
+    if not 'stderr' in kwargs:
+        kwargs['stderr'] = subprocess.PIPE
+    if not 'stdout' in kwargs:
+        kwargs['stdout'] = subprocess.PIPE
+    if not 'text' in kwargs:
+        kwargs['text'] = True
+    if not 'bufsize' in kwargs:
+        kwargs['bufsize'] = 1
+
+
+    logging.info(f"Running command: {cmd}")
+    
+    cmd_list = shlex.split(cmd)
+
+    with subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1) as process:
+        for stdout_line in iter(process.stdout.readline, ""):
+            logging.info(stdout_line.strip())
+
+        for stderr_line in iter(process.stderr.readline, ""):
+            logging.error(stderr_line.strip())
+
+        process.stdout.close()
+        process.stderr.close()
+        return_code = process.wait()
+
+        if return_code:
+            logging.error(f"Command '{cmd}' failed with return code {return_code}")
+            raise subprocess.CalledProcessError(return_code, cmd)
+
+    logging.info(f"Command '{cmd}' completed successfully")
+    return subprocess.CompletedProcess(cmd, return_code)
 
 def running_message(function):
     def wrapper(*args, **kwargs):
@@ -34,17 +107,28 @@ def running_message(function):
         args_repr = [f"{arg}={format_argument(a)}" for arg, a in zip(arg_names, args)]
         kwargs_repr = [f"{k}={format_argument(v)}" for k, v in kwargs.items()]
         signature = ", ".join(args_repr + kwargs_repr)
-        print("----------------------------------------")
-        print(f"Time: {current_time} - Running {function.__name__}\n\nUsing inputs:\n{function.__name__}({signature})\n")
-        result = function(*args, **kwargs)
+        
+        logging.info(f"Time: {current_time} - Running {function.__name__} with inputs: {function.__name__}({signature})")
 
-        T2 = datetime.now()                
-        current_time2 = T2.strftime("%H:%M:%S")
-        total_time = format_timedelta(T2 - T1)
-        print(f"\nTime: {current_time2} - {function.__name__} Completed")
-        print(f"Total time taken: {total_time}\n\n")
-        return result
+        try:
+            result = function(*args, **kwargs)
+            return result
+        except Exception as e:
+            logging.exception(f"Exception occurred in function {function.__name__}: {e}")
+            raise
+        finally:
+            T2 = datetime.now()
+            current_time2 = T2.strftime("%H:%M:%S")
+            total_time = format_timedelta(T2 - T1)
+            if 'verify_output' in kwargs:
+                if os.stat(kwargs['verify_output'])== 0:
+                    logging.error(f"Time: {current_time2} - {function.__name__} Failed")
+                    logging.error(f"Total time taken: {total_time}")
+            logging.info(f"Time: {current_time2} - {function.__name__} Completed")
+            logging.info(f"Total time taken: {total_time}")
+
     return wrapper
+
 def read_fasta(fastafile):
     # Get the total size of the file
     total_size = os.path.getsize(fastafile)
@@ -77,30 +161,6 @@ def write_fasta(outpath: str, recordlist: list)->None:
         SeqIO.write(recordlist, output_handle, "fasta")
 
 
-def makedir(path: str, force_make: bool=False)->str:
-    '''
-    Makes a directory if the given direcotry doesn't exist. If force_make true, makes a directory with a number
-    :param path: location of new directory
-    :param force_make: To make a new directory with a number if a directory already exists at given path
-    :return: path to new dir
-    '''
-    try:
-        os.mkdir(path)
-        return path
-    except:
-        if not force_make:
-            return path
-    i = 1
-    if force_make:
-        while True:
-            new_name = f"{path}_{i}"
-            try:
-                os.mkdir(new_name)
-                break
-            except:
-                i += 1
-        return new_name
-    
     
 def read_lines(file_path):
     file_size = os.path.getsize(file_path)

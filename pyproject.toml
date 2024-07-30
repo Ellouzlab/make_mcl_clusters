@@ -16,8 +16,7 @@ dependencies = [
     "pandas>=2.0.0",
     "biopython>=1.84",
     "tqdm>=2.0.0",
-    "matplotlib>=3.0.0",
-    "scipy>=1.14.0"]
+    "matplotlib>=3.0.0"]
 
 [project.scripts]
 mobile_clusters = "scripts.main:main"

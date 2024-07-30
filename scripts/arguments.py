@@ -32,14 +32,25 @@ def arguments():
     network_parser.add_argument("-r", '--reference_db', help="TSV mapping file with first column 'assembly_name' being nodes, and second, 'protein_ids' being protein ids in the initial protein file", required=True)
     network_parser.add_argument("-t", "--threads", help="Number of threads", default=cpu_count(), type=int)
     network_parser.add_argument("-o", "--outdir", help="Output directory", default="output_network")
+    network_parser.add_argument("--mmseqs", action="store_true", help="Use mmseqs instead of diamond")
     network_parser.add_argument("--type", default='nucl', choices=['nucl', 'prot'], help="reference database type")
+
     
     gene_share_parser = subparsers.add_parser('gene_share', help='calculate gene sharing network')
     gene_share_parser.add_argument("-i", "--input", help="Output directory from the 'cluster' module", required=True)
     gene_share_parser.add_argument("-m", "--mapping", help="TSV mapping file with first column 'assembly_name' being nodes, and second, 'protein_ids' being protein ids in the initial protein file", default='None')
     gene_share_parser.add_argument("-t", "--threads", help="Number of threads", default=cpu_count(), type=int)
     gene_share_parser.add_argument("-o", "--outdir", help="Output directory", default="output_gene_share")
+    gene_share_parser.add_argument("--mmseqs", action="store_true", help="Use mmseqs instead of diamond")
     gene_share_parser.add_argument('--gen_mapping_file', help = 'only use if your protein name is node_id_{some number} made for the developer', action='store_true', default=False)
+    
+    amg_parser = subparsers.add_parser('amg', help='create AMG network')
+    amg_parser.add_argument("-v", "--viral_pcs", help="viral protein clusters", required=True)
+    amg_parser.add_argument("-g", "--go_metabolic", help="bacterial protein clusters", required=True)
+    amg_parser.add_argument("-r", "--host_genomes", help="host genomes", required=True)
+    amg_parser.add_argument('-d', '--protein_distance', help="protein distance", default=27000, type=int)
+    amg_parser.add_argument("-t", "--threads", help="Number of threads", default=cpu_count(), type=int)
+    amg_parser.add_argument("-o", "--outdir", help="Output directory", default="output_amg")
 
     arguments = args.parse_args()
 
@@ -57,6 +68,10 @@ def arguments():
             
         if not arguments.gen_mapping_file and arguments.mapping == 'None':
             args.error("Please provide a mapping file or use --gen_mapping_file flag to generate a mapping if node_id_{some number} = protein_id.")
+    
+    if arguments.command == "amg":
+        if arguments.protein_distance < 1:
+            args.error("Protein distance must be a positive integer")
     
     return arguments
 

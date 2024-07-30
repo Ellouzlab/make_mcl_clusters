@@ -1,41 +1,8 @@
 from scripts.utils import running_message, pd_read_csv, read_fasta, write_fasta
 from subprocess import run
 from tqdm import tqdm
-import pandas as pd
 import os
-
-@running_message
-def mmseqs_makedb(input, outdir):
-    db = f"{outdir}/mmseqs_db"
-    if not os.path.exists(f"{outdir}/mmseqs_db"):
-        cmd = f"mmseqs createdb {input} {outdir}/mmseqs_db"
-        run(cmd, shell=True)
-    else:
-        print("Database already exists, using existing database")
-    return db
-
-@running_message
-def mmseqs(db, outdir, threads, sensitivity, coverage=0.5, min_id = 0.3 ,e_value=1e5):
-    tmp = f"{outdir}/tmp"
-    os.makedirs(tmp, exist_ok=True)
-    
-    cluster_output = f"{outdir}/cluster_output"
-    if not os.path.exists(f"{cluster_output}.index"):
-        cmd = f"mmseqs cluster -s {sensitivity} -c {coverage} --min-seq-id {min_id} -e {e_value} --threads {threads} {db} {cluster_output} {tmp}"
-        run(cmd, shell=True)
-    else:
-        print("Output file already exists, using existing file")
-    return cluster_output
-
-@running_message
-def mmseqs_createtsv(db, cluster_output, outdir):
-    tsv_path = f"{outdir}/cluster_output.tsv"
-    if not os.path.exists(tsv_path):
-        cmd = f"mmseqs createtsv {db} {db} {cluster_output} {tsv_path}"
-        run(cmd, shell=True)
-    else:
-        print("Output file already exists, using existing file")
-    return tsv_path
+from scripts.mmseqs_utils import mmseqs_makedb, mmseqs_cluster_cmd, mmseqs_createtsv
 
 @running_message
 def processing_cluster(tsv_path, input, outdir):
@@ -55,6 +22,7 @@ def processing_cluster(tsv_path, input, outdir):
     
     write_fasta(f"{outdir}/representative_genes.fasta", rep_records)
 
+@running_message
 def mmseqs_cluster(input: str, outdir: str, threads: int, sensitivity: int)->None:
     os.makedirs(outdir, exist_ok=True)
     
@@ -63,7 +31,7 @@ def mmseqs_cluster(input: str, outdir: str, threads: int, sensitivity: int)->Non
         run(f"cp {input} {fasta_path}", shell=True)
     
     db = mmseqs_makedb(input, outdir)
-    cluster_output = mmseqs(db, outdir, threads, sensitivity)
+    cluster_output = mmseqs_cluster_cmd(db, outdir, threads, sensitivity)
     tsv_path = mmseqs_createtsv(db, cluster_output, outdir)
     
     processing_cluster(tsv_path, input, outdir)
